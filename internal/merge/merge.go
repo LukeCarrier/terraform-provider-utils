@@ -6,7 +6,7 @@ import (
 )
 
 // Merge takes a list of maps of interface as input and returns a single map with the merged contents
-func Merge(inputs []map[interface{}]interface{}) (map[interface{}]interface{}, error) {
+func Merge(inputs []map[interface{}]interface{}, typeCheck bool) (map[interface{}]interface{}, error) {
 	merged := map[interface{}]interface{}{}
 
 	for index := range inputs {
@@ -27,7 +27,11 @@ func Merge(inputs []map[interface{}]interface{}) (map[interface{}]interface{}, e
 			return nil, err
 		}
 
-		if err = mergo.Merge(&merged, dataCurrent, mergo.WithOverride, mergo.WithOverwriteWithEmptyValue, mergo.WithTypeCheck); err != nil {
+		opts := []func(*mergo.Config){mergo.WithOverride, mergo.WithOverwriteWithEmptyValue}
+		if typeCheck {
+			opts = append(opts, mergo.WithTypeCheck)
+		}
+		if err = mergo.Merge(&merged, dataCurrent, opts...); err != nil {
 			return nil, err
 		}
 	}

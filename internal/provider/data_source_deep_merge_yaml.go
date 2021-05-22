@@ -24,6 +24,12 @@ func dataSourceDeepMergeYAML() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Required:    true,
 			},
+			"type_check": {
+				Description: "Type check values?",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+			},
 			"output": {
 				Description: "The deep-merged output.",
 				Type:        schema.TypeString,
@@ -34,15 +40,15 @@ func dataSourceDeepMergeYAML() *schema.Resource {
 }
 
 func dataSourceDeepMergeYAMLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	input := d.Get("input")
+	typeCheck := d.Get("type_check")
 
 	data, err := c.YAMLSliceOfInterfaceToSliceOfMaps(input.([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	merged, err := m.Merge(data)
+	merged, err := m.Merge(data, typeCheck.(bool))
 	if err != nil {
 		return diag.FromErr(err)
 	}
